@@ -6,14 +6,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Dto\UserOutput;
+
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ApiResource(
  *  output=UserOutput::class,
  *  normalizationContext={"groups"={"user_read"}}
  * )
+ * @UniqueEntity("email")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface
@@ -26,6 +30,7 @@ class User implements UserInterface
     private $id;
 
     /**
+     * @Assert\Email
      * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
@@ -50,6 +55,11 @@ class User implements UserInterface
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $lastConnection;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $failedAuth;
 
     public function __construct()
     {
@@ -168,6 +178,18 @@ class User implements UserInterface
     public function setLastConnection(?\DateTimeInterface $lastConnection): self
     {
         $this->lastConnection = $lastConnection;
+
+        return $this;
+    }
+
+    public function getFailedAuth(): ?int
+    {
+        return $this->failedAuth;
+    }
+
+    public function setFailedAuth(int $failedAuth): self
+    {
+        $this->failedAuth = $failedAuth;
 
         return $this;
     }
